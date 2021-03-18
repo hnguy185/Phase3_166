@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
 import java.sql.PreparedStatement;
+
 /**
  * This class defines a simple embedded SQL utility class that is designed to
  * work with PostgreSQL JDBC drivers.
@@ -105,7 +106,7 @@ public class DBproject{
 			    outputHeader = false;
 			}
 			for (int i=1; i<=numCol; ++i)
-				System.out.print (rs.getString (i) + "\t");
+				System.out.print ((rs.getString (i)).trim() + "\t");
 			System.out.println ();
 			++rowCount;
 		}//end while
@@ -303,30 +304,34 @@ public class DBproject{
 
 	public static void AddShip(DBproject esql) {//1
 		try{ 
-			System.out.println("Please enter the ship details seperated by white space: ");
-			String input, make, model;
+			System.out.println("Please enter the ship details: ");
+			String make, model;
 			int id, age, seats;
-			boolean valid = false;
-			do{
-				input = in.readLine();
-				String[] parts = ProcessInput(input);
-				if(parts.length != 5){
-					System.out.println("Missing details, please enter again");
-					break;
-				}
-				id = Integer.parseInt(parts[0]); 
-				make = parts[1]; 
-				model = parts[2]; 
-				age = Integer.parseInt(parts[3]); 
-				seats = Integer.parseInt(parts[4]);
+			
+			String c = "SELECT COUNT(id) FROM Ship";
+			int count = esql.GetCountResult(c);
+			count++;						//this is the id for the next inserted ship since the id is sorted in asceding order
+			 System.out.print("Enter make: ");
+			make = in.readLine();
+			 System.out.print("Enter model: ");
+			model = in.readLine();
+			 System.out.print("Enter ship make year: ");
+			age = Integer.parseInt(in.readLine());
+			 System.out.print("Enter number of seats: ");
+			seats = Integer.parseInt(in.readLine());
+			
 
 				String query = "INSERT INTO Ship (id, make, model, age, seats) VALUES\n"+
-						"("+id+",'"+make+"','"+model+"',"+age+","+seats+")";
-				int printOut = 0;
-				 esql.executeUpdate(query);
-				System.out.println(printOut);
-			/*				
-				PreparedStatement stmt = _connection.prepareStatement ("INSERT INTO Ship (id, make, model, age, seats) VALUES (?,?,?,?,?)");
+						"("+ count +",'"+make+"','"+model+"',"+age+","+seats+")";
+				esql.executeUpdate(query);
+
+				String check = "SELECT * FROM Ship WHERE make = '"+make+"' AND model = '"+model+"' AND age = "+age+" AND seats = "+seats;
+				int tmp = esql.executeQueryAndPrintResult(check);
+				System.out.print(tmp);
+				System.out.println("Ship added");
+				
+			/*			
+				PreparedStatement stmt = esql._connection.prepareStatement ("INSERT INTO Ship (id, make, model, age, seats) VALUES (?,?,?,?,?)");
 				stmt.setInt(1,id);
 				stmt.setString(2,make);
 				stmt.setString(3,model);
@@ -334,13 +339,7 @@ public class DBproject{
 				stmt.setInt(5,seats);
 
 				stmt.executeUpdate();
-			*/
-				String check = "SELECT make,model FROM Ship WHERE id = " + id;
-				int rowCount = esql.executeQuery(check);
-				System.out.println (rowCount);
-				valid = true;
-			
-			}while(valid = false);
+		*/		
 			
 		}catch(Exception e){
 	         System.err.println (e.getMessage());
@@ -351,6 +350,46 @@ public class DBproject{
 	}
 
 	public static void AddCruise(DBproject esql) {//3
+	  try{
+                        
+                        String dep_date, arr_date, dep_port, arr_port;
+                        int cnum, cost, num_sold, num_stop;
+			String c = "SELECT COUNT(cnum) FROM Cruise";
+                        int count = esql.GetCountResult(c);
+                        count++;
+
+			System.out.println("Please enter the cruise details: ");
+			 System.out.print("Enter ticket cost: ");
+			cost = Integer.parseInt(in.readLine());
+			 System.out.print("Enter number of tickets sold: ");
+			num_sold = Integer.parseInt(in.readLine());
+			 System.out.print("Enter number of cruise stops: ");
+			num_stop = Integer.parseInt(in.readLine());
+			 System.out.print("Enter departure date in the form yyyy-mm-dd: ");
+			dep_date = in.readLine();
+			 System.out.print("Enter arrival date in the form yyyy-mm-dd: ");
+			arr_date = in.readLine();
+			 System.out.print("Enter departure port: ");
+			dep_port = in.readLine();
+			 System.out.print("Enter arrival port: ");
+			arr_port = in.readLine();
+                        
+			 String query = "INSERT INTO Cruise  (cnum, cost, num_sold, num_stops,actual_departure_date,\n"+ 
+					"actual_arrival_date, arrival_port, departure_port) VALUES \n"+
+					"("+count+","+cost+","+num_sold+","+num_stop+",'"+dep_date+"','"+arr_date+"','"+arr_port+"','"+dep_port+"')";
+			 
+			esql.executeUpdate(query);
+			
+			String q2 = "SELECT * FROM Cruise WHERE cost = "+cost+" AND num_sold = "+num_sold+" AND num_stops = "+num_stop+"\n"+
+					"AND actual_departure_date = '"+dep_date+"' AND actual_arrival_date = '"+arr_date+"' AND arrival_port = '"+arr_port+"'";
+			int p = esql.executeQueryAndPrintResult(q2);
+			System.out.println(p);
+                        System.out.println("Cruise added");  
+    	
+             }catch(Exception e){
+                 System.err.println (e.getMessage());
+                }                              
+                                
 	}
 
 
@@ -369,5 +408,32 @@ public class DBproject{
 	
 	public static void FindPassengersCountWithStatus(DBproject esql) {//7
 		// Find how many passengers there are with a status (i.e. W,C,R) and list that number.
+		try{
+			int cnum; String status;
+			System.out.println("Please enter the details: ");
+                        System.out.print("Enter cruise ID: ");
+			cnum = Integer.parseInt(in.readLine());
+			System.out.print("Enter customer status: ");
+			status = in.readLine();//.charAt(0);
+			
+			String query = "SELECT COUNT(r.ccid) FROM Reservation r, Cruise c WHERE r.cid = c.cnum AND r.status = '"+status+"' AND c.cnum = "+cnum;
+			int tmp = esql.executeQueryAndPrintResult(query);
+			System.out.println(tmp);
+	
+		}catch(Exception e){
+                 System.err.println (e.getMessage());
+                }	
 	}
+
+	public int GetCountResult (String query) throws SQLException {
+
+                Statement stmt = this._connection.createStatement ();
+                ResultSet rs = stmt.executeQuery (query);
+                rs.next();
+                int count = rs.getInt(1);
+                stmt.close ();
+                return count;
+
+        }
+
 }
