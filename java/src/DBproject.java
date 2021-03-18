@@ -23,7 +23,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
-
+import java.sql.PreparedStatement;
 /**
  * This class defines a simple embedded SQL utility class that is designed to
  * work with PostgreSQL JDBC drivers.
@@ -295,7 +295,48 @@ public class DBproject{
 		return input;
 	}//end readChoice
 
+	public static String[] ProcessInput(string s){
+
+		String[] parts = s.split(" ");
+		return parts;	
+	}
+
 	public static void AddShip(DBproject esql) {//1
+		try{ 
+			System.out.println("Please enter the ship details seperated by white space: ");
+			String input, id, make, model, age, seats;
+			boolean valid = false;
+			do{
+				input = in.readLine();
+				String[] parts = ProcessInput(input);
+				if(parts.length() != 5){
+					System.out.println("Missing details, please enter again");
+					break;
+				}
+				id = Integer.parseInt(parts[0]); 
+				make = parts[1]; 
+				model = parts[2]; 
+				age = Integer.parseInt(parts[3]); 
+				seats = Integer.parseInt(parts[4]);
+				
+				PreparedStatement stmt = conn.prepareStatement ("INSERT INTO Ship (id, make, model, age, seats) VALUES (?,?,?,?,?)");
+				stmt.setInt(1,id);
+				stmt.setString(2,make);
+				stmt.setString(3,model);
+				stmt.setInt(4,age);
+				stmt.setInt(5,seats);
+
+				stmt.executeUpdate();
+
+				String check = "SELECT * FROM Ship WHERE id = " + id;
+				int rowCount = esql.executeQuery(check);
+				System.out.println (rowCount);
+				valid = true;
+
+			}while(valid = false)
+			
+		}catch(Exception e){
+         System.err.println (e.getMessage());
 	}
 
 	public static void AddCaptain(DBproject esql) {//2
