@@ -305,20 +305,54 @@ public class DBproject{
 	public static void AddShip(DBproject esql) {//1
 		try{ 
 			System.out.println("Please enter the ship details: ");
-			String make, model;
-			int id, age, seats;
+			String model, input;
+			int age = 0;
+			int seats = 0;
+			int tmp;
+			String make = "";
 			
 			String c = "SELECT COUNT(id) FROM Ship";
 			int count = esql.GetCountResult(c);
 			count++;						//this is the id for the next inserted ship since the id is sorted in asceding order
-			 System.out.print("Enter make: ");
-			make = in.readLine();
+			 
+			boolean flag = false;
+			
+			while(!flag){
+				System.out.print("Enter make: ");
+				make = in.readLine();
+				tmp = CorrectStringInput(make,32);
+			 	if(tmp == 0)
+                                	System.out.println("Invalid input!!! Please enter valid a input");
+                        	else
+                                	break;
+                        }
+			
 			 System.out.print("Enter model: ");
 			model = in.readLine();
+			
+			while(!flag){
 			 System.out.print("Enter ship make year: ");
-			age = Integer.parseInt(in.readLine());
+			 input = in.readLine();
+			 tmp = CheckIntegerVal(input,0,9999);
+			if(tmp == 0 || Integer.parseInt(input) < 0)
+                                System.out.println("Invalid input!!! Please enter valid a input");
+                        else{
+				age = Integer.parseInt(input);
+				break;
+				}
+			}
+			
+			while(!flag){
 			 System.out.print("Enter number of seats: ");
-			seats = Integer.parseInt(in.readLine());
+			input = in.readLine();
+			tmp = CheckIntegerVal(input,0,500);
+			 if(tmp == 0 || Integer.parseInt(input) < 1 || Integer.parseInt(input) >= 500)
+                                System.out.println("Invalid input!!! Please enter valid a input");
+                        else{
+				seats = Integer.parseInt(input);
+                                break;
+				}
+                        }
 			
 
 				String query = "INSERT INTO Ship (id, make, model, age, seats) VALUES\n"+
@@ -326,9 +360,9 @@ public class DBproject{
 				esql.executeUpdate(query);
 
 				String check = "SELECT * FROM Ship WHERE make = '"+make+"' AND model = '"+model+"' AND age = "+age+" AND seats = "+seats;
-				int tmp = esql.executeQueryAndPrintResult(check);
-				System.out.print(tmp);
-				System.out.println("Ship added");
+				int tmp2 = esql.executeQueryAndPrintResult(check);
+				System.out.print(tmp2);
+				System.out.println(" Ship added");
 				
 			/*			
 				PreparedStatement stmt = esql._connection.prepareStatement ("INSERT INTO Ship (id, make, model, age, seats) VALUES (?,?,?,?,?)");
@@ -399,7 +433,6 @@ public class DBproject{
 			while(!flag){			
 			 System.out.print("Enter ticket cost: ");
 			input = in.readLine();
-			//cost = Integer.parseInt(in.readLine());
 			tmp = CheckIntegerVal(input,0,99999);
 			if(tmp == 0 || Integer.parseInt(input) <= 0)
 				System.out.println("Invalid input!!! Please enter valid a input");
@@ -408,7 +441,6 @@ public class DBproject{
 				break;
 			    }
 			}
-			//flag = false;			
 
 			while(!flag){
 			 System.out.print("Enter number of tickets sold: ");
@@ -419,8 +451,6 @@ public class DBproject{
 				break;
 			}
 
-			//flag = false;
-
 			while(!flag){
 			 System.out.print("Enter number of cruise stops: ");
 			num_stop = Integer.parseInt(in.readLine());
@@ -430,7 +460,6 @@ public class DBproject{
                                 flag = true;
                         }
 
-                 //       flag = false;
 			 System.out.print("Enter departure date in the form mm/dd/yyyy: ");
 			dep_date = in.readLine();
 			 System.out.print("Enter arrival date in the form mm/dd/yyyy: ");
@@ -446,7 +475,6 @@ public class DBproject{
                                 break;
                         }
 
-                        //flag = false;
 
 			while(!false){
 			 System.out.print("Enter arrival port: ");
@@ -466,7 +494,7 @@ public class DBproject{
 					"AND actual_departure_date = '"+dep_date+"' AND actual_arrival_date = '"+arr_date+"' AND arrival_port = '"+arr_port+"'";
 			int p = esql.executeQueryAndPrintResult(q2);
 			System.out.println(p);
-                        System.out.println("Cruise added");  
+                        System.out.println(" Cruise added");  
     	
              }catch(Exception e){
                  System.err.println (e.getMessage());
@@ -503,16 +531,39 @@ public class DBproject{
 	public static void FindPassengersCountWithStatus(DBproject esql) {//7
 		// Find how many passengers there are with a status (i.e. W,C,R) and list that number.
 		try{
-			int cnum; String status;
+			int tmp; int cnum = 0; 
+			char status = ' '; 
+			String input;
+			boolean flag = false;
+
+			  String c = "SELECT COUNT(id) FROM Ship";
+                        int count = esql.GetCountResult(c);
+				
+
 			System.out.println("Please enter the details: ");
+			while(!flag){
                         System.out.print("Enter cruise ID: ");
 			cnum = Integer.parseInt(in.readLine());
-			System.out.print("Enter customer status: ");
-			status = in.readLine();//.charAt(0);
+			if(cnum >= 0 && cnum <= count )
+				break;
+			else
+				System.out.println("Invalid input!!! Please enter a valid input.");
+			}
+				
+			while(!flag){
+			System.out.print("Enter customer status (W/R/C): ");
+			input = in.readLine();
+			status = input.charAt(0);
+			if(Character.toUpperCase(status) == 'W'|| Character.toUpperCase(status) == 'R' || Character.toUpperCase(status) == 'C') 
+				break;
+			else
+				System.out.println("Invalid input!!! Please enter a valid input.");
+			}
 			
 			String query = "SELECT COUNT(r.ccid) FROM Reservation r, Cruise c WHERE r.cid = c.cnum AND r.status = '"+status+"' AND c.cnum = "+cnum;
-			int tmp = esql.executeQueryAndPrintResult(query);
-			System.out.println(tmp);
+			tmp = esql.executeQueryAndPrintResult(query);
+			System.out.println(tmp+" query executed");
+			
 	
 		}catch(Exception e){
                  System.err.println (e.getMessage());
