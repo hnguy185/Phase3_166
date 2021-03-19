@@ -345,6 +345,35 @@ public class DBproject{
 	         System.err.println (e.getMessage());
 		}
 	}
+	public static int CorrectStringInput (String name, int num) {
+
+                int count = name.length();
+                if (num < count)
+                        return 0;
+                else
+                        {
+                          if (name.matches("^[ a-zA-Z]+$"))
+                                return 1;
+                          else
+                                return 0;
+                        }
+
+        }
+	public static int CheckIntegerVal (String value, int min, int max) {
+
+                if (value.matches("[0-9]+"))
+                {
+                    int num =Integer.parseInt(value);
+                    if ((num >= min) && (num <= max))
+                        return 1;
+                    else
+                        return 0;
+                }
+                else
+                        return 0;
+
+        }
+
 
 	public static void AddCaptain(DBproject esql) {//2
 	}
@@ -352,28 +381,81 @@ public class DBproject{
 	public static void AddCruise(DBproject esql) {//3
 	  try{
                         
-                        String dep_date, arr_date, dep_port, arr_port;
-                        int cnum, cost, num_sold, num_stop;
+                        String dep_date, arr_date, arr_port, input;
+			String dep_port ="";
+                        int num_sold = 0;
+			int num_stop = 0;
+			int cost = 0;
+			int tmp;
+
 			String c = "SELECT COUNT(cnum) FROM Cruise";
                         int count = esql.GetCountResult(c);
                         count++;
 
+			boolean flag = false;
+
 			System.out.println("Please enter the cruise details: ");
+			
+			while(!flag){			
 			 System.out.print("Enter ticket cost: ");
-			cost = Integer.parseInt(in.readLine());
+			input = in.readLine();
+			//cost = Integer.parseInt(in.readLine());
+			tmp = CheckIntegerVal(input,0,99999);
+			if(tmp == 0 || Integer.parseInt(input) <= 0)
+				System.out.println("Invalid input!!! Please enter valid a input");
+			else{
+				cost = Integer.parseInt(input);
+				break;
+			    }
+			}
+			//flag = false;			
+
+			while(!flag){
 			 System.out.print("Enter number of tickets sold: ");
 			num_sold = Integer.parseInt(in.readLine());
+			if(num_sold < 0)
+				System.out.println("Invalid input!!! Please enter valid a input");
+			else
+				break;
+			}
+
+			//flag = false;
+
+			while(!flag){
 			 System.out.print("Enter number of cruise stops: ");
 			num_stop = Integer.parseInt(in.readLine());
-			 System.out.print("Enter departure date in the form yyyy-mm-dd: ");
+			 if(num_stop < 0)
+                                System.out.println("Invalid input!!! Please enter valid a input");
+                        else
+                                flag = true;
+                        }
+
+                 //       flag = false;
+			 System.out.print("Enter departure date in the form mm/dd/yyyy: ");
 			dep_date = in.readLine();
-			 System.out.print("Enter arrival date in the form yyyy-mm-dd: ");
+			 System.out.print("Enter arrival date in the form mm/dd/yyyy: ");
 			arr_date = in.readLine();
+			
+			while(!flag){
 			 System.out.print("Enter departure port: ");
 			dep_port = in.readLine();
+			 tmp = CorrectStringInput(dep_port,5);
+			 if(tmp == 0)
+                                System.out.println("Invalid input!!! Please enter valid a input");
+                        else
+                                break;
+                        }
+
+                        //flag = false;
+
+			while(!false){
 			 System.out.print("Enter arrival port: ");
 			arr_port = in.readLine();
-                        
+                        tmp = CorrectStringInput(arr_port,5);                                                                                                                                        if(tmp == 0)                                                                                                                                                                       System.out.println("Invalid input!!! Please enter valid a input");                                                                                                  else                                                                                                                                                                                break;
+                        }
+
+         
+
 			 String query = "INSERT INTO Cruise  (cnum, cost, num_sold, num_stops,actual_departure_date,\n"+ 
 					"actual_arrival_date, arrival_port, departure_port) VALUES \n"+
 					"("+count+","+cost+","+num_sold+","+num_stop+",'"+dep_date+"','"+arr_date+"','"+arr_port+"','"+dep_port+"')";
@@ -403,6 +485,18 @@ public class DBproject{
 
 	public static void ListsTotalNumberOfRepairsPerShip(DBproject esql) {//6
 		// Count number of repairs per Ships and list them in descending order
+		try{
+			
+			String query = "SELECT DISTINCT s.make, s.model, COUNT(s.id) \n"+
+				"AS Total_Repairs FROM Ship s, Repairs r WHERE s.id=r.ship_id GROUP BY s.id ORDER BY Total_Repairs DESC";
+			List<List<String>> result = new ArrayList<List<String>>(); 
+			result = esql.executeQueryAndReturnResult(query);
+			System.out.println("make \t\t\t\t model \t\t\t\t\t\t\t num of repairs");
+			result.forEach(System.out::println);
+
+		  }catch(Exception e){
+                 System.err.println (e.getMessage());
+                }
 	}
 
 	
