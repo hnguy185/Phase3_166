@@ -764,7 +764,7 @@ public class DBproject{
 			String input;
 			boolean flag = false;
 
-			  String c = "SELECT COUNT(id) FROM Ship";
+			  String c = "SELECT COUNT(cnum) FROM Cruise";
                         int count = esql.GetCountResult(c);
 				
 
@@ -775,8 +775,10 @@ public class DBproject{
 			tmp = CheckIntegerVal(input,0,count);
 			if(tmp == 0)						
 				System.out.println("Invalid input!!! Please enter a valid input.");
-			else
+			else{
+				cnum = Integer.parseInt(input);
 				break;
+				}
 			}
 				
 			while(!flag){
