@@ -23,7 +23,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
-import java.sql.PreparedStatement;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -176,6 +175,71 @@ public class DBproject{
 		return rowCount;
 	}
 	
+	//OUR FUNCTIONS
+        //Function that returns the total COUNT in a query
+
+        public  int GetCountResult (String query) throws SQLException {
+
+                Statement stmt = this._connection.createStatement ();
+                ResultSet rs = stmt.executeQuery (query);
+                rs.next();
+                int count = rs.getInt(1);
+                stmt.close ();
+                return count;
+
+        }
+
+	 public String GetCharResult (String query) throws SQLException {
+
+                Statement stmt = this._connection.createStatement ();
+                ResultSet rs = stmt.executeQuery (query);
+                rs.next();
+                String count = rs.getString(1);
+                stmt.close ();
+                return count;
+
+        }
+
+
+
+        //Function that checks if the String is only Letters and within the range 'num'
+        //Returns 0 for error, 1 for success
+        public static int CorrectStringInput (String name, int num) {
+
+                int count = name.length();
+                if (num < count)
+                        return 0;
+                else
+                        {
+                          if (name.matches("^[ a-zA-Z]+$"))
+                                return 1;
+                          else
+                                return 0;
+                        }
+
+        }
+//Function checks if the String input is a valid integer 
+        //and if its within the range of min and max given
+        public static int CheckIntegerVal (String value, int min, int max) {
+
+                if (value.matches("[0-9]+"))
+                {
+                    int num =Integer.parseInt(value);
+                    if ((num >= min) && (num <= max))
+                        return 1;
+                    else
+                        return 0;
+                }
+                else
+                        return 0;
+
+        }
+
+
+        //END of OUR FUNCTIONS
+
+	
+	
 	/**
 	 * Method to fetch the last value from sequence. This
 	 * method issues the query to the DBMS and returns the current 
@@ -296,14 +360,9 @@ public class DBproject{
 		return input;
 	}//end readChoice
 
-	public static String[] ProcessInput(String s){
-
-		String[] parts = s.split(" ");
-		return parts;	
-	}
-
 	public static void AddShip(DBproject esql) {//1
-		try{ 
+	
+	try{ 
 			System.out.println("Please enter the ship details: ");
 			String model, input;
 			int age = 0;
@@ -378,42 +437,58 @@ public class DBproject{
 		}catch(Exception e){
 	         System.err.println (e.getMessage());
 		}
+	
+	
 	}
-	public static int CorrectStringInput (String name, int num) {
-
-                int count = name.length();
-                if (num < count)
-                        return 0;
-                else
-                        {
-                          if (name.matches("^[ a-zA-Z]+$"))
-                                return 1;
-                          else
-                                return 0;
-                        }
-
-        }
-	public static int CheckIntegerVal (String value, int min, int max) {
-
-                if (value.matches("[0-9]+"))
-                {
-                    int num =Integer.parseInt(value);
-                    if ((num >= min) && (num <= max))
-                        return 1;
-                    else
-                        return 0;
-                }
-                else
-                        return 0;
-
-        }
-
 
 	public static void AddCaptain(DBproject esql) {//2
+	try {
+                String name, nationality;
+                String query2="SELECT COUNT(c.id) FROM Captain c;";
+                int count=esql.GetCountResult (query2);
+                System.out.print("\n\n\n");
+                System.out.print("\tENTER DATA FOR NEW CAPTAIN:\n");
+                System.out.print("\tEnter name: ");
+
+                while(true)
+                {
+                name=in.readLine();
+                int check = esql.CorrectStringInput (name, 128);
+                if (check==0)
+                    System.out.print("\tError! Please enter a correct name: ");
+                else
+                   break;
+                }
+
+                System.out.print("\tEnter nationality: ");
+
+                while(true)
+                {
+                nationality=in.readLine();
+                int check = esql.CorrectStringInput (nationality, 24);
+                if (check==0)
+                    System.out.print("\tError! Please enter a correct nationality: ");
+                else
+                   break;
+                }
+                String query = "INSERT INTO Captain (id,fullname,nationality) VALUES ("+count+", '"+name+"', '"+nationality+"');";
+                esql.executeUpdate(query);
+                System.out.println ("\n\tThe Following record was ADDED:\n ");
+                String check2 = "SELECT * FROM Captain WHERE fullname = '"+name+"' AND id = "+count+" AND nationality = '"+nationality+"';";
+                int tmp = esql.executeQueryAndPrintResult(check2);
+                System.out.print("\t"+tmp+"\n");
+
+
+         } catch (Exception e) {System.err.println (e.getMessage());}
+
+
+        System.out.print("\n\n\n");
+
+	
 	}
 
 	public static void AddCruise(DBproject esql) {//3
-	  try{
+	 try{
                         
                         String dep_date, arr_date, arr_port, input;
 			String dep_port ="";
@@ -500,20 +575,154 @@ public class DBproject{
                  System.err.println (e.getMessage());
                 }                              
                                 
+
+
 	}
 
 
 	public static void BookCruise(DBproject esql) {//4
 		// Given a customer and a Cruise that he/she wants to book, add a reservation to the DB
+	     String num="",num2="";
+                int success=1;
+         try {
+                // String num,num2;
+                String query2="SELECT COUNT(c.id) FROM Customer c;";
+               int count=esql.GetCountResult(query2);
+                 System.out.print("\n\n\n");
+                System.out.print("\tNOTE: The existent number of customers is from 0 to "+(count-1)+"\n");
+                System.out.print("\tENTER DATA:\n");
+                System.out.print("\tEnter customer ID: ");
+                 while(true)
+                {
+                num = in.readLine();
+                int num3=esql.CheckIntegerVal(num, 0, (count -1));
+                if (num3 == 0)
+                   System.out.print("\tError! Customer ID does not exist. Please enter correct Customer ID: ");
+                else
+                   break;
+                }
+
+                query2="SELECT COUNT(c.cnum) FROM Cruise c;";
+                count=esql.GetCountResult (query2);
+                System.out.print("\tEnter cruise number: [0-"+(count-1)+"] ");
+                 while(true)
+                {
+                num2 = in.readLine();
+                int num3=esql.CheckIntegerVal(num2, 0, (count -1));
+                if (num3 == 0)
+                   System.out.print("\tError! Cruise number wrong. Please enter correct Cruise number: ");
+                else
+                   break;
+                }
+                String query = "SELECT r.status FROM Reservation r WHERE r.ccid = "+num+" AND r.cid = "+num2+";";
+                //int status=esql.GetCountResult(query);
+                String status=esql.GetCharResult (query);
+                if (status.equals("W"))
+                        {
+                          query="UPDATE Reservation SET status = 'C' WHERE ccid ="+num+" AND cid="+num2+";";
+                          esql.executeUpdate(query);
+                          System.out.print("\n\tRESERVATION UPDATED FROM WAITLIST to CONFIRMED\n ");
+
+                        }
+                else if (status.equals("C"))
+                        System.out.print("\n\tThe status of the reservation is CONFIRMED\n");
+
+                else 
+                        System.out.print("\n\tThe status of the reservation is RESERVED\n");
+	
+                } catch (Exception e) {
+                                //      System.err.println ("test NOT RESERVATION Found it");
+                                        success=0;
+                                        }
+
+                if (success == 0)
+                {
+                        try{
+                         String query = "SELECT s.num_sold FROM Cruise s, Schedule c WHERE s.cnum = c.cruiseNum AND s.cnum = "+num2+" ;";
+                         int ticketsSold=esql.GetCountResult(query);
+                         query = "SELECT s.seats FROM Ship s, Cruise c, CruiseInfo f WHERE f.cruise_id = c.cnum AND s.id = f.ship_id AND c.cnum = "+num+";";
+                         int seats=esql.GetCountResult(query);
+                         int available= (seats - ticketsSold);
+                         System.out.print("\n\tNumber of seats availabe for this cruise: "+available+"\n");
+                         query="SELECT COUNT(r.rnum) FROM Reservation r;";
+                         int count2=esql.GetCountResult (query);
+
+                         if (available > 0)
+                                {
+                                        query="INSERT INTO Reservation (rnum, ccid, cid, status) VALUES ("+(count2)+","+num+","+num2+", 'R');";
+                                        System.out.print("\n\tThe Cruise has tickets available. Reservation created and status of ticket: RESERVED\n");
+
+
+                                }
+                        else
+                                {
+                                        query="INSERT INTO Reservation (rnum, ccid, cid, status) VALUES ("+(count2)+","+num+","+num2+", 'W');";
+                                        System.out.print("\n\tThe Cruise does not have tickets available. Reservation created and status of ticket: WAITLISTED\n");
+                                }
+
+                         esql.executeUpdate(query);
+                         System.out.println ("\n\tThe Following record was ADDED:\n ");
+                         String check2 = "SELECT * FROM Reservation WHERE ccid = '"+num+"' AND cid = "+num2+";";
+                         int tmp = esql.executeQueryAndPrintResult(check2);
+                         System.out.print("\t"+tmp+"\n");
+
+
+                }catch (Exception e) {System.err.println (e.getMessage());}
+                }
+                 System.out.print("\n\n\n");
+
+
 	}
 
 	public static void ListNumberOfAvailableSeats(DBproject esql) {//5
 		// For Cruise number and date, find the number of availalbe seats (i.e. total Ship capacity minus booked seats )
+		
+	  try {
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                String date,num;
+                String query2="SELECT COUNT(c.cnum) FROM Cruise c;";
+                int count=esql.GetCountResult (query2);
+                System.out.print("\n\n\n");
+                System.out.print("\tNOTE: The existent number of cruises is from 0 to "+(count-1)+"\n");
+                System.out.print("\t      For inserting a DATE please use the following format MM/DD/YYYY and don't use 0 at the begining. Thanks!");
+                System.out.print("\n\n");
+                System.out.print("\tPlease enter number of cruise: ");
+                while(true)
+                {
+                num = in.readLine();
+                int num2= CheckIntegerVal(num, 0, (count -1));
+                if (num2 == 0)
+                   System.out.print("\tError! Cruise Does not exist. Please enter correct cruise number: ");
+                else
+                   break;
+                }
+                System.out.print("\tEnter Departure date of cruise in the following format MM/DD/YYYY: ");
+                while(true)
+                {
+                date=in.readLine();
+                 if (date.matches("^(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/((18|19|20|21)\\d\\d)$"))
+                                break;
+                          else
+                                 System.out.print("\tError! Please enter a correct data of FORMAT MM/DD/YYYY: ");
+                }
+                String query = "SELECT s.num_sold FROM Cruise s, Schedule c WHERE s.cnum = c.cruiseNum AND s.cnum = "+num+" AND c.departure_time = '"+date+"%';";
+                int ticketsSold=esql.GetCountResult(query);
+                query = "SELECT s.seats FROM Ship s, Cruise c, CruiseInfo f WHERE f.cruise_id = c.cnum AND s.id = f.ship_id AND c.cnum = "+num+";";
+                int seats=esql.GetCountResult(query);
+                System.out.print("\n\tNumber of seats availabe for this cruise: "+ (seats - ticketsSold)+"\n");
+
+
+        // } catch (Exception e) {System.err.println (e.getMessage());}
+           } catch (Exception e) {System.err.println ("\n\t THIS CRUISE IS NOT SCHEDULED FOR THIS DATE. THANKS! ");}
+
+                System.out.print("\n\n\n");
+	
 	}
 
 	public static void ListsTotalNumberOfRepairsPerShip(DBproject esql) {//6
 		// Count number of repairs per Ships and list them in descending order
-		try{
+	try{
 			
 			String query = "SELECT DISTINCT s.make, s.model, COUNT(s.id) \n"+
 				"AS Total_Repairs FROM Ship s, Repairs r WHERE s.id=r.ship_id GROUP BY s.id ORDER BY Total_Repairs DESC";
@@ -525,12 +734,14 @@ public class DBproject{
 		  }catch(Exception e){
                  System.err.println (e.getMessage());
                 }
+	
 	}
 
 	
 	public static void FindPassengersCountWithStatus(DBproject esql) {//7
 		// Find how many passengers there are with a status (i.e. W,C,R) and list that number.
-		try{
+	
+	try{
 			int tmp; int cnum = 0; 
 			char status = ' '; 
 			String input;
@@ -543,11 +754,12 @@ public class DBproject{
 			System.out.println("Please enter the details: ");
 			while(!flag){
                         System.out.print("Enter cruise ID: ");
-			cnum = Integer.parseInt(in.readLine());
-			if(cnum >= 0 && cnum <= count )
-				break;
-			else
+			input = in.readLine();
+			tmp = CheckIntegerVal(input,0,count);
+			if(tmp == 0)						
 				System.out.println("Invalid input!!! Please enter a valid input.");
+			else
+				break;
 			}
 				
 			while(!flag){
@@ -569,16 +781,5 @@ public class DBproject{
                  System.err.println (e.getMessage());
                 }	
 	}
-
-	public int GetCountResult (String query) throws SQLException {
-
-                Statement stmt = this._connection.createStatement ();
-                ResultSet rs = stmt.executeQuery (query);
-                rs.next();
-                int count = rs.getInt(1);
-                stmt.close ();
-                return count;
-
-        }
 
 }
