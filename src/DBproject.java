@@ -490,7 +490,9 @@ public class DBproject{
 	public static void AddCruise(DBproject esql) {//3
 	 try{
                         
-                        String dep_date, arr_date, arr_port, input;
+                        String dep_date= " ";
+			String arr_date= " ";
+			String arr_port, input;
 			String dep_port ="";
                         int num_sold = 0;
 			int num_stop = 0;
@@ -532,13 +534,27 @@ public class DBproject{
 			 if(num_stop < 0)
                                 System.out.println("Invalid input!!! Please enter valid a input");
                         else
-                                flag = true;
+                                break;
                         }
+			
+			while(!flag){
+                	System.out.print("Enter departure date mm/dd/yyyy. For example 5/14/1995:  ");
+                	dep_date=in.readLine();
+                 	if (dep_date.matches("^(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/((18|19|20|21)\\d\\d)$"))
+                        	        break;
+                          else
+                                 System.out.print("\tError! Please enter a correct data of FORMAT MM/DD/YYYY: ");
+                	}
 
-			 System.out.print("Enter departure date in the form mm/dd/yyyy: ");
-			dep_date = in.readLine();
-			 System.out.print("Enter arrival date in the form mm/dd/yyyy: ");
-			arr_date = in.readLine();
+			 while(!flag){
+                	System.out.print("Enter arrival date mm/dd/yyyy. For example 5/14/1995:  ");
+                	arr_date=in.readLine();
+                 	if (arr_date.matches("^(0?[1-9]|1[012])/(0?[1-9]|[12][0-9]|3[01])/((18|19|20|21)\\d\\d)$"))
+                                break;
+                          else
+                                 System.out.print("\tError! Please enter a correct data of FORMAT MM/DD/YYYY: ");
+                	}
+
 			
 			while(!flag){
 			 System.out.print("Enter departure port: ");
@@ -604,11 +620,12 @@ public class DBproject{
 
                 query2="SELECT COUNT(c.cnum) FROM Cruise c;";
                 count=esql.GetCountResult (query2);
-                System.out.print("\tEnter cruise number: [0-"+(count-1)+"] ");
+                System.out.print("\tEnter cruise number: [0-"+ (count-1)+"] ");
                  while(true)
                 {
                 num2 = in.readLine();
-                int num3=esql.CheckIntegerVal(num2, 0, (count -1));
+			//System.out.println("count "+count);
+                int num3=esql.CheckIntegerVal(num2, 0, (count-1 ));
                 if (num3 == 0)
                    System.out.print("\tError! Cruise number wrong. Please enter correct Cruise number: ");
                 else
